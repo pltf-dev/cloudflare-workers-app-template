@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-16-cloudflare-workers-app-template-design.md`
 
+**Status:** executed 2026-09-16. Deviations: Task 5 (items schema/repo) was built before Task 4 so the sitemap could wire to the repository directly; the rename script was split into `scripts/rename-content.mjs` (pure, unit-tested in the workers pool) and `scripts/rename.mjs` (filesystem walker, smoke-tested on a temp copy) because workerd has no filesystem.
+
 ## Global Constraints
 
 - Repo root: `/Users/marceldias/conductor/repos/cloudflare-workers-app-template`. Its own git repo on `main`. Never `git push`.
@@ -34,7 +36,7 @@
 **Interfaces:**
 - Produces: `getDb(d1): Db`, `json(obj, status?)`, `redirect(path)`, `parseId(params, key?)` from `src/lib/http.ts`; `Cloudflare.Env { DB, MEDIA, OTP_HMAC_SECRET, RESEND_API_KEY, AUTH_ALLOWED_EMAILS?, APP_ORIGIN? }`.
 
-- [ ] **Step 1: package.json**
+- [x] **Step 1: package.json**
 
 ```json
 {
@@ -84,9 +86,9 @@
 
 Copy `pnpm-workspace.yaml`, `.npmrc`, `tsconfig.json`, `drizzle.config.ts` verbatim from `$FAROL`. `.gitignore` = FarolImob's minus the graphify line, plus `infra/.env`.
 
-- [ ] **Step 2: astro.config.mjs** — FarolImob's without the `allowedHosts` block.
+- [x] **Step 2: astro.config.mjs** — FarolImob's without the `allowedHosts` block.
 
-- [ ] **Step 3: wrangler.jsonc**
+- [x] **Step 3: wrangler.jsonc**
 
 ```jsonc
 {
@@ -122,9 +124,9 @@ Copy `pnpm-workspace.yaml`, `.npmrc`, `tsconfig.json`, `drizzle.config.ts` verba
 }
 ```
 
-- [ ] **Step 4: vitest.config.ts** — FarolImob's with bindings reduced to `TEST_MIGRATIONS`, `OTP_HMAC_SECRET: "test-hmac-secret"`, `RESEND_API_KEY: "re_test"`, `APP_ORIGIN: "https://cf-app.example.com"`; no `astro:content` alias.
+- [x] **Step 4: vitest.config.ts** — FarolImob's with bindings reduced to `TEST_MIGRATIONS`, `OTP_HMAC_SECRET: "test-hmac-secret"`, `RESEND_API_KEY: "re_test"`, `APP_ORIGIN: "https://cf-app.example.com"`; no `astro:content` alias.
 
-- [ ] **Step 5: src/env.d.ts**
+- [x] **Step 5: src/env.d.ts**
 
 ```ts
 /// <reference types="astro/client" />
@@ -153,9 +155,9 @@ declare namespace Cloudflare {
 }
 ```
 
-- [ ] **Step 6: src/db/client.ts, src/lib/http.ts, src/pages/api/health.ts, test/setup.ts, test/api-health.test.ts** — copy from `$FAROL` verbatim. `src/db/schema.ts` temporarily: `export {};` — replaced in Task 2. Create `migrations/` with an empty `meta/_journal.json` (`{"version":"7","dialect":"sqlite","entries":[]}`) so `readD1Migrations` finds the directory.
+- [x] **Step 6: src/db/client.ts, src/lib/http.ts, src/pages/api/health.ts, test/setup.ts, test/api-health.test.ts** — copy from `$FAROL` verbatim. `src/db/schema.ts` temporarily: `export {};` — replaced in Task 2. Create `migrations/` with an empty `meta/_journal.json` (`{"version":"7","dialect":"sqlite","entries":[]}`) so `readD1Migrations` finds the directory.
 
-- [ ] **Step 7: .dev.vars.example**
+- [x] **Step 7: .dev.vars.example**
 
 ```bash
 # Copy to .dev.vars (gitignored). Only OTP_HMAC_SECRET is required for local dev.
@@ -164,9 +166,9 @@ OTP_HMAC_SECRET="replace-with: openssl rand -hex 32"
 # AUTH_ALLOWED_EMAILS="you@example.com,teammate@example.com"
 ```
 
-- [ ] **Step 8: Install and run** — `SHARP_IGNORE_GLOBAL_LIBVIPS=1 pnpm install`, then `pnpm typecheck && pnpm test && pnpm build`. Expected: 0 errors, 1 test passing, build green.
+- [x] **Step 8: Install and run** — `SHARP_IGNORE_GLOBAL_LIBVIPS=1 pnpm install`, then `pnpm typecheck && pnpm test && pnpm build`. Expected: 0 errors, 1 test passing, build green.
 
-- [ ] **Step 9: Commit** — `gcm "chore: scaffold Astro on Cloudflare Workers with D1/R2 and workerd tests"`
+- [x] **Step 9: Commit** — `gcm "chore: scaffold Astro on Cloudflare Workers with D1/R2 and workerd tests"`
 
 ---
 
@@ -179,7 +181,7 @@ OTP_HMAC_SECRET="replace-with: openssl rand -hex 32"
 **Interfaces:**
 - Produces: tables `users`, `sessions`, `authCodes`; `findUserByEmail(db, email)`, `createUser(db, {email, name?})`, `getUserById(db, id)`; otp: `generateCode`, `generateLinkToken`, `hashCode`, `storeCode`, `checkThrottle`, `verifyCode`, `verifyLinkToken`; session: `createSession(db, userId, opts)`, `validateSession(db, token): {userId, sessionId, renewed} | null`, `destroySession`, `listSessions(db, userId)`, `revokeSession(db, userId, id)`, `revokeOtherSessions(db, userId, keepId)`, `serializeSessionCookie`, `parseSessionCookie`, `expireSessionCookie`, `sessionMetaFromRequest`; `isEmailAllowed(allowlist: string | undefined, email): boolean`; `completeAuth(db, email, request, allowlist): {ok:true, sessionToken} | {ok:false}`.
 
-- [ ] **Step 1: Write tests** for users repo (create + find, unique email), otp (port `$FAROL/test/auth-magic-link.test.ts` and the otp assertions from `$FAROL/test/session-service.test.ts` style: throttle after 3, max attempts, replay), session (port `$FAROL/test/admin-auth-middleware.test.ts` DB parts with `userId`), allowlist:
+- [x] **Step 1: Write tests** for users repo (create + find, unique email), otp (port `$FAROL/test/auth-magic-link.test.ts` and the otp assertions from `$FAROL/test/session-service.test.ts` style: throttle after 3, max attempts, replay), session (port `$FAROL/test/admin-auth-middleware.test.ts` DB parts with `userId`), allowlist:
 
 ```ts
 import { describe, it, expect } from "vitest";
@@ -197,9 +199,9 @@ describe("isEmailAllowed", () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect failures** (`pnpm test`).
+- [x] **Step 2: Run, expect failures** (`pnpm test`).
 
-- [ ] **Step 3: Implement.** `schema.ts`:
+- [x] **Step 3: Implement.** `schema.ts`:
 
 ```ts
 import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
@@ -238,9 +240,9 @@ export function isEmailAllowed(allowlist: string | undefined, email: string): bo
 
 `users.ts`: `findUserByEmail`, `getUserById`, `createUser`.
 
-- [ ] **Step 4: Generate migration** — `pnpm db:generate`, rename the SQL file to `0000_init.sql` and update `meta/_journal.json` tag accordingly. Run `pnpm test` → all green.
+- [x] **Step 4: Generate migration** — `pnpm db:generate`, rename the SQL file to `0000_init.sql` and update `meta/_journal.json` tag accordingly. Run `pnpm test` → all green.
 
-- [ ] **Step 5: Commit** — `gcm "feat(auth): users, sessions and OTP/magic-link libraries over D1"`
+- [x] **Step 5: Commit** — `gcm "feat(auth): users, sessions and OTP/magic-link libraries over D1"`
 
 ---
 
@@ -253,7 +255,7 @@ export function isEmailAllowed(allowlist: string | undefined, email: string): bo
 **Interfaces:**
 - Produces: `isAdminPath(pathname): boolean`, `isApiPath(pathname): boolean` in `paths.ts`; `sendLoginCode(email, code, loginUrl)` in `email/login-code.ts` (Resend POST); verify-code returns `{ok:true}` + `Set-Cookie` or `{ok:false,error:"invalid_code"|"not_allowed"}`.
 
-- [ ] **Step 1: Tests.** Port `$FAROL/test/api-auth-send-code.test.ts` and `api-auth-verify-code.test.ts` (URL `http://localhost/...`; replace tenant seeding with `users` inserts; the "unknown email" case now asserts a user row is created and a cookie set; add a case with `AUTH_ALLOWED_EMAILS` unset vs. set via the `env` override pattern: the handler accepts an optional `allowlist` in its context for tests). `auth-paths.test.ts`:
+- [x] **Step 1: Tests.** Port `$FAROL/test/api-auth-send-code.test.ts` and `api-auth-verify-code.test.ts` (URL `http://localhost/...`; replace tenant seeding with `users` inserts; the "unknown email" case now asserts a user row is created and a cookie set; add a case with `AUTH_ALLOWED_EMAILS` unset vs. set via the `env` override pattern: the handler accepts an optional `allowlist` in its context for tests). `auth-paths.test.ts`:
 
 ```ts
 it("gates /admin, /admin/x and /api/admin/x, not /login or /api/auth", () => {
@@ -266,9 +268,9 @@ it("gates /admin, /admin/x and /api/admin/x, not /login or /api/auth", () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect failures.**
+- [x] **Step 2: Run, expect failures.**
 
-- [ ] **Step 3: Implement.** `paths.ts`:
+- [x] **Step 3: Implement.** `paths.ts`:
 
 ```ts
 export const isAdminPath = (p: string) =>
@@ -318,9 +320,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
 `login.astro`: port `entrar.astro` structure with English copy ("Sign in", "Your email", "Send code", "Check your email", "Code", "Verify", "Use another email", link-error notice) and tokens from `global.css` (Task 4 supplies it; import `../styles/global.css` and use `var(--color-*)`). Keep the same-origin `next` guard verbatim. On success always `window.location.href = safeNext` (no signup branch).
 
-- [ ] **Step 4: Run gate** — `pnpm typecheck && pnpm test && pnpm build`.
+- [x] **Step 4: Run gate** — `pnpm typecheck && pnpm test && pnpm build`.
 
-- [ ] **Step 5: Commit** — `gcm "feat(auth): passwordless login endpoints, magic link and session middleware"`
+- [x] **Step 5: Commit** — `gcm "feat(auth): passwordless login endpoints, magic link and session middleware"`
 
 ---
 
@@ -333,7 +335,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 **Interfaces:**
 - Produces: `NavKey = "items" | "account"`, `adminNavSections(): NavSection[]`; `AdminLayout` props `{title, eyebrow?, sub?, active?, primary?, docTitle?}`; `Layout` props `{title, description?}`; `renderSitemap(origin, entries)`, `robotsTxt(origin)`.
 
-- [ ] **Step 1: global.css tokens**
+- [x] **Step 1: global.css tokens**
 
 ```css
 @import "tailwindcss";
@@ -360,7 +362,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
 plus the `@layer base` body/heading/focus rules, `.wrap`, `.btn-pill`, `.sr-only`, reduced-motion block from `$FAROL`.
 
-- [ ] **Step 2: Components.** Port `Button` (variants `accent | ghost | outline`; drop `wa`), `Section` (tones `ink | paper | paper-2`), `Eyebrow`, `Toast` (event name `app:toast`, ids `app-toasts`), `Logo` (simple mark: a rounded square with a signal dot, wordmark `CF App`; no `src` prop), `ErrorScreen` (no Beam/MadeBy; static gradient), `header-menu.ts` verbatim, `toast.ts`.
+- [x] **Step 2: Components.** Port `Button` (variants `accent | ghost | outline`; drop `wa`), `Section` (tones `ink | paper | paper-2`), `Eyebrow`, `Toast` (event name `app:toast`, ids `app-toasts`), `Logo` (simple mark: a rounded square with a signal dot, wordmark `CF App`; no `src` prop), `ErrorScreen` (no Beam/MadeBy; static gradient), `header-menu.ts` verbatim, `toast.ts`.
   `nav.ts` without plan gating:
 
 ```ts
@@ -377,11 +379,11 @@ export const adminNav = (): NavItem[] => NAV.flatMap((s) => s.items);
 
 `AdminHeader.astro`: port, drop plan/tenant lookup and lock icons, logout posts to `/api/auth/logout` then `location.href="/login"`. `AdminLayout.astro`: port, drop the blog footer. `Layout.astro`: `<html lang="en">`, header with Logo + "Sign in"/"Admin" link, footer, Toast. `404/500.astro`: English copy, actions `[{Home, /}, {Sign in, /login}]`.
 
-- [ ] **Step 3: Account page + revoke endpoint.** `admin/account.astro` lists `listSessions(db, userId)` with `describeUserAgent`, marks the current one (`Astro.locals.sessionId`), each row has a form `POST /api/admin/sessions/revoke` with `id`, plus one "Sign out other devices" form with `all=1`. Endpoint: parse form, `revokeSession(db, userId, id)` or `revokeOtherSessions(db, userId, sessionId)`, redirect `/admin/account?saved=1`. Test: seed user + 2 sessions, call `POST` with `locals: { userId, sessionId }`, assert only the other row is gone; revoking another user's session id is a no-op.
+- [x] **Step 3: Account page + revoke endpoint.** `admin/account.astro` lists `listSessions(db, userId)` with `describeUserAgent`, marks the current one (`Astro.locals.sessionId`), each row has a form `POST /api/admin/sessions/revoke` with `id`, plus one "Sign out other devices" form with `all=1`. Endpoint: parse form, `revokeSession(db, userId, id)` or `revokeOtherSessions(db, userId, sessionId)`, redirect `/admin/account?saved=1`. Test: seed user + 2 sessions, call `POST` with `locals: { userId, sessionId }`, assert only the other row is gone; revoking another user's session id is a no-op.
 
-- [ ] **Step 4: robots/sitemap.** `robots.txt.ts`: allow `/`, disallow `/admin`, `/api/`, `/login`; `Sitemap:` line. `sitemap.xml.ts`: `/` plus `/items/<id>` for published items (uses `listPublishedItems` — stub the import with an empty array until Task 5, then wire). Tests for both pure functions.
+- [x] **Step 4: robots/sitemap.** `robots.txt.ts`: allow `/`, disallow `/admin`, `/api/`, `/login`; `Sitemap:` line. `sitemap.xml.ts`: `/` plus `/items/<id>` for published items (uses `listPublishedItems` — stub the import with an empty array until Task 5, then wire). Tests for both pure functions.
 
-- [ ] **Step 5: Gate + commit** — `gcm "feat(ui): neutral design tokens, layouts, admin chrome and account page"`
+- [x] **Step 5: Gate + commit** — `gcm "feat(ui): neutral design tokens, layouts, admin chrome and account page"`
 
 ---
 
@@ -395,8 +397,8 @@ export const adminNav = (): NavItem[] => NAV.flatMap((s) => s.items);
 **Interfaces:**
 - Produces: `ItemStatus = "draft" | "published"`; `NewItemInput {title, body, status}`; `listPublishedItems(db)`, `listItemsForUser(db, userId)`, `getItem(db, id)`, `getItemForUser(db, userId, id)`, `createItem(db, userId, input): Item`, `updateItem(db, userId, id, input): boolean`, `deleteItem(db, userId, id): boolean`, `setItemImage(db, userId, id, imageKey | null)`.
 
-- [ ] **Step 1: Test** — create/list/update/delete; `listPublishedItems` excludes drafts and orders newest first; `updateItem` for another user's id returns false and changes nothing.
-- [ ] **Step 2: Fail.** **Step 3: Implement** schema:
+- [x] **Step 1: Test** — create/list/update/delete; `listPublishedItems` excludes drafts and orders newest first; `updateItem` for another user's id returns false and changes nothing.
+- [x] **Step 2: Fail.** **Step 3: Implement** schema:
 
 ```ts
 export const items = sqliteTable("items", {
@@ -412,7 +414,7 @@ export const items = sqliteTable("items", {
 ```
 
 Repository as pure functions; `pnpm db:generate` → rename to `0001_items.sql`.
-- [ ] **Step 4: Gate + commit** — `gcm "feat(items): schema, migration and repository for the example resource"`
+- [x] **Step 4: Gate + commit** — `gcm "feat(items): schema, migration and repository for the example resource"`
 
 ---
 
@@ -425,8 +427,8 @@ Repository as pure functions; `pnpm db:generate` → rename to `0001_items.sql`.
 **Interfaces:**
 - Produces: `formStr`, `formBool`, `parseItemForm(form): {valid, input: NewItemInput}`; `media.ts`: `contentTypeForKey(key)`, `extensionForType(type) | null`, `MAX_IMAGE_BYTES = 5_000_000`, `imageKeyFor(itemId, ext)`; endpoints take `{ request, params, locals: { userId } }`.
 
-- [ ] **Step 1: Tests.** Public GET returns only published items as `{ok:true, items:[...]}`. Admin create: valid form → 303 to `/admin/items/<id>/edit?saved=1`, row exists; invalid → 303 `/admin/items/new?error=invalid`. Update/delete scoped by `locals.userId`. Image: multipart with a small PNG buffer → object exists in `env.MEDIA` under `items/<id>/`, `imageKey` set, content-type stored as `image/png`; non-image type → `?error=type`; oversize → `?error=size`. Media route: seeded object streams back with derived content-type + `nosniff`; unknown key → 404.
-- [ ] **Step 2: Fail. Step 3: Implement** (form POST + redirect pattern from `$FAROL/src/lib/http.ts`). Media route:
+- [x] **Step 1: Tests.** Public GET returns only published items as `{ok:true, items:[...]}`. Admin create: valid form → 303 to `/admin/items/<id>/edit?saved=1`, row exists; invalid → 303 `/admin/items/new?error=invalid`. Update/delete scoped by `locals.userId`. Image: multipart with a small PNG buffer → object exists in `env.MEDIA` under `items/<id>/`, `imageKey` set, content-type stored as `image/png`; non-image type → `?error=type`; oversize → `?error=size`. Media route: seeded object streams back with derived content-type + `nosniff`; unknown key → 404.
+- [x] **Step 2: Fail. Step 3: Implement** (form POST + redirect pattern from `$FAROL/src/lib/http.ts`). Media route:
 
 ```ts
 export async function GET({ params }: { params: { key?: string } }) {
@@ -444,7 +446,7 @@ export async function GET({ params }: { params: { key?: string } }) {
 }
 ```
 
-- [ ] **Step 4: Gate + commit** — `gcm "feat(items): admin form endpoints, public JSON API and R2 media route"`
+- [x] **Step 4: Gate + commit** — `gcm "feat(items): admin form endpoints, public JSON API and R2 media route"`
 
 ---
 
@@ -454,9 +456,9 @@ export async function GET({ params }: { params: { key?: string } }) {
 - Create: `src/pages/index.astro`, `src/pages/items/[id].astro`, `src/pages/admin/items/index.astro`, `src/pages/admin/items/new.astro`, `src/pages/admin/items/[id]/edit.astro`, `src/components/admin/ItemForm.astro`, `src/components/admin/ItemImage.tsx` (React island: file input → `fetch` POST multipart → reload), `src/components/site/ItemCard.astro`
 - Modify: `src/pages/sitemap.xml.ts` (wire `listPublishedItems`), `src/pages/admin/index.astro` (redirect to `/admin/items`)
 
-- [ ] **Step 1: Build pages** with `AdminLayout` (`active="items"`, `primary={{label:"New item", href:"/admin/items/new"}}` on the list) and the card/form/badge/banner patterns from `$FAROL/docs/creating-an-admin-page.md`. Status badge, `?saved=1` success banner, `?error=` error banner. Public `/` shows published items as cards; `/items/[id]` 404s for drafts (`Astro.response.status = 404` via `404.astro` rewrite: `return Astro.rewrite("/404")`).
-- [ ] **Step 2: Browser smoke** — `pnpm dev`, throwaway Playwright script: `/` 200, `/login` 200, `/admin` → 303 `/login?next=%2Fadmin`, `/404` renders, `/api/health` `{status:"ok",db:true}`; forge a session (`docs/solutions/local-smoke-testing-gated-admin-routes.md` recipe with `user_id`) and load `/admin/items`, `/admin/items/new`, `/admin/account`; no console errors.
-- [ ] **Step 3: Gate + commit** — `gcm "feat(items): public listing pages and admin CRUD pages"`
+- [x] **Step 1: Build pages** with `AdminLayout` (`active="items"`, `primary={{label:"New item", href:"/admin/items/new"}}` on the list) and the card/form/badge/banner patterns from `$FAROL/docs/creating-an-admin-page.md`. Status badge, `?saved=1` success banner, `?error=` error banner. Public `/` shows published items as cards; `/items/[id]` 404s for drafts (`Astro.response.status = 404` via `404.astro` rewrite: `return Astro.rewrite("/404")`).
+- [x] **Step 2: Browser smoke** — `pnpm dev`, throwaway Playwright script: `/` 200, `/login` 200, `/admin` → 303 `/login?next=%2Fadmin`, `/404` renders, `/api/health` `{status:"ok",db:true}`; forge a session (`docs/solutions/local-smoke-testing-gated-admin-routes.md` recipe with `user_id`) and load `/admin/items`, `/admin/items/new`, `/admin/account`; no console errors.
+- [x] **Step 3: Gate + commit** — `gcm "feat(items): public listing pages and admin CRUD pages"`
 
 ---
 
@@ -465,10 +467,10 @@ export async function GET({ params }: { params: { key?: string } }) {
 **Files:**
 - Create: `playwright.config.ts`, `e2e/support/{env,db,otp,login,account}.ts`, `e2e/prepare-state.ts`, `e2e/auth.setup.ts`, `e2e/login.spec.ts`, `e2e/publish-item.spec.ts`, `e2e/fixtures/photo.png`, `.github/workflows/ci.yml`
 
-- [ ] **Step 1: Port harness** from `$FAROL/e2e` (`farolimob` → `cf-app` in wrangler commands, emails `e2e-<stamp>@cf-app.test`, English labels from `login.astro`). `auth.setup.ts`: sign in with a fresh email → lands on `/admin/items` with the empty state "No items yet." `login.spec.ts`: visit `/admin/items` cold → `/login?next=%2Fadmin%2Fitems` → code → back to `/admin/items`. `publish-item.spec.ts`: New item → fill title/body → save → set status published → upload `photo.png` (wait for `astro-island` hydration per the harness-traps doc) → visit `/` → title visible → `/items/<id>` shows image with `naturalWidth > 0`.
-- [ ] **Step 2: Add** `"test:e2e"` already in scripts; `pnpm exec playwright install chromium` once. Run `pnpm test:e2e` → 3 passing.
-- [ ] **Step 3: ci.yml** — FarolImob's `test` and `e2e` jobs only; a header comment explains deploys happen in Workers Builds (link `docs/deploying.md`).
-- [ ] **Step 4: Commit** — `gcm "test(e2e): playwright happy paths and GitHub Actions test workflow"`
+- [x] **Step 1: Port harness** from `$FAROL/e2e` (`farolimob` → `cf-app` in wrangler commands, emails `e2e-<stamp>@cf-app.test`, English labels from `login.astro`). `auth.setup.ts`: sign in with a fresh email → lands on `/admin/items` with the empty state "No items yet." `login.spec.ts`: visit `/admin/items` cold → `/login?next=%2Fadmin%2Fitems` → code → back to `/admin/items`. `publish-item.spec.ts`: New item → fill title/body → save → set status published → upload `photo.png` (wait for `astro-island` hydration per the harness-traps doc) → visit `/` → title visible → `/items/<id>` shows image with `naturalWidth > 0`.
+- [x] **Step 2: Add** `"test:e2e"` already in scripts; `pnpm exec playwright install chromium` once. Run `pnpm test:e2e` → 3 passing.
+- [x] **Step 3: ci.yml** — FarolImob's `test` and `e2e` jobs only; a header comment explains deploys happen in Workers Builds (link `docs/deploying.md`).
+- [x] **Step 4: Commit** — `gcm "test(e2e): playwright happy paths and GitHub Actions test workflow"`
 
 ---
 
@@ -477,9 +479,9 @@ export async function GET({ params }: { params: { key?: string } }) {
 **Files:**
 - Create: `infra/{Pulumi.yaml,index.ts,package.json,tsconfig.json,pulumi.sh,.env.example}`, `docs/deploying.md`
 
-- [ ] **Step 1: Pulumi program** — D1 `cf-app`, R2 `cf-app-media` (location `ENAM` with a comment to change), exports `d1DatabaseId`, `mediaBucket`. `pulumi.sh`: loads `infra/.env` (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `PULUMI_CONFIG_PASSPHRASE`, `PULUMI_BACKEND_URL`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) with `set -a; source`, then `pulumi stack select prod --create && pulumi "$@"`. Keep the preview-then-confirm behaviour for `up|destroy|refresh`. `.env.example` documents each var and the `op run --env-file` alternative.
-- [ ] **Step 2: docs/deploying.md** — sections: prerequisites; provision with Pulumi and paste `database_id`; set Worker secrets; connect Workers Builds (build command, deploy command, production branch, preview via `wrangler versions upload`); branch protection required checks; custom domain; fallback GitHub Actions deploy job (commented YAML with a scoped, expiring token); why not OIDC (link to `workers-sdk#11434`).
-- [ ] **Step 3: Commit** — `gcm "docs(infra): pulumi program and Workers Builds deployment runbook"`
+- [x] **Step 1: Pulumi program** — D1 `cf-app`, R2 `cf-app-media` (location `ENAM` with a comment to change), exports `d1DatabaseId`, `mediaBucket`. `pulumi.sh`: loads `infra/.env` (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `PULUMI_CONFIG_PASSPHRASE`, `PULUMI_BACKEND_URL`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) with `set -a; source`, then `pulumi stack select prod --create && pulumi "$@"`. Keep the preview-then-confirm behaviour for `up|destroy|refresh`. `.env.example` documents each var and the `op run --env-file` alternative.
+- [x] **Step 2: docs/deploying.md** — sections: prerequisites; provision with Pulumi and paste `database_id`; set Worker secrets; connect Workers Builds (build command, deploy command, production branch, preview via `wrangler versions upload`); branch protection required checks; custom domain; fallback GitHub Actions deploy job (commented YAML with a scoped, expiring token); why not OIDC (link to `workers-sdk#11434`).
+- [x] **Step 3: Commit** — `gcm "docs(infra): pulumi program and Workers Builds deployment runbook"`
 
 ---
 
@@ -488,10 +490,10 @@ export async function GET({ params }: { params: { key?: string } }) {
 **Files:**
 - Create: `AGENTS.md`, `CLAUDE.md` (symlink), `README.md`, `.claude/settings.json`, `.claude/skills/review-pr/SKILL.md`, `.claude/skills/add-feature/SKILL.md`, `docs/adding-a-feature.md`, `docs/creating-an-admin-page.md`, `docs/solutions/README.md`, `docs/solutions/_template.md`, `docs/solutions/{playwright-e2e-harness-traps,drizzle-snapshot-previd-collision,local-smoke-testing-gated-admin-routes,pnpm-install-fails-sharp-global-libvips}.md`
 
-- [ ] **Step 1: AGENTS.md** with the eight sections from the spec, adapted from `$FAROL/AGENTS.md`. `ln -s AGENTS.md CLAUDE.md`.
-- [ ] **Step 2: README.md** — what it is, "Use this template" (GitHub button or `gh repo create my-app --template <owner>/cloudflare-workers-app-template --clone`, then `pnpm rename my-app my-app.example.com`), local dev quick start, gate, deployment pointer, localisation note, what to delete (items slice).
-- [ ] **Step 3: .claude/settings.json** — `{ "permissions": { "allow": ["Bash(pnpm test*)", "Bash(pnpm typecheck)", "Bash(pnpm build)"] } }`.
-- [ ] **Step 4: Skills.** `review-pr` generified (auth boundary bullet now: middleware is the sole gate; media bullet kept; drop pt-BR/Pedro/AI bullets). `add-feature`:
+- [x] **Step 1: AGENTS.md** with the eight sections from the spec, adapted from `$FAROL/AGENTS.md`. `ln -s AGENTS.md CLAUDE.md`.
+- [x] **Step 2: README.md** — what it is, "Use this template" (GitHub button or `gh repo create my-app --template <owner>/cloudflare-workers-app-template --clone`, then `pnpm rename my-app my-app.example.com`), local dev quick start, gate, deployment pointer, localisation note, what to delete (items slice).
+- [x] **Step 3: .claude/settings.json** — `{ "permissions": { "allow": ["Bash(pnpm test*)", "Bash(pnpm typecheck)", "Bash(pnpm build)"] } }`.
+- [x] **Step 4: Skills.** `review-pr` generified (auth boundary bullet now: middleware is the sole gate; media bullet kept; drop pt-BR/Pedro/AI bullets). `add-feature`:
 
 ```markdown
 ---
@@ -508,8 +510,8 @@ description: Add a new resource or feature to this Cloudflare Workers app by fol
 7. Write a `docs/solutions/` entry if anything non-obvious was learned.
 ```
 
-- [ ] **Step 5: docs** — `adding-a-feature.md` (layer-by-layer tour of items + "removing the example" checklist), `creating-an-admin-page.md` (port, English, nav keys), solutions README + template + 4 ported entries (paths updated: `sid` cookie recipe uses `user_id`; wrangler db name `cf-app`).
-- [ ] **Step 6: Commit** — `gcm "docs: agent handbook, skills, feature recipe and ported learnings"`
+- [x] **Step 5: docs** — `adding-a-feature.md` (layer-by-layer tour of items + "removing the example" checklist), `creating-an-admin-page.md` (port, English, nav keys), solutions README + template + 4 ported entries (paths updated: `sid` cookie recipe uses `user_id`; wrangler db name `cf-app`).
+- [x] **Step 6: Commit** — `gcm "docs: agent handbook, skills, feature recipe and ported learnings"`
 
 ---
 
@@ -518,9 +520,9 @@ description: Add a new resource or feature to this Cloudflare Workers app by fol
 **Files:**
 - Create: `scripts/rename.mjs`, `test/rename-script.test.ts`, `.github/workflows/template-cleanup.yml`, `.github/ISSUE_TEMPLATE/bug.md`, `.github/ISSUE_TEMPLATE/feature.md`, `.github/PULL_REQUEST_TEMPLATE.md`
 
-- [ ] **Step 1: Test** — copy a fixture tree (`fixtures/rename/`: one `.jsonc`, one `.md`, one `.ts` containing `cf-app`, `CF App`, `cf-app.example.com`) to a temp dir, run `renameTree(dir, {name:"acme", display:"Acme", domain:"acme.dev"})`, assert every occurrence replaced, binary/ignored dirs untouched (`node_modules`, `.git`, `dist`), and a second run is a no-op (same content).
-- [ ] **Step 2: Implement** `rename.mjs` exporting `renameTree` and running as CLI: `node scripts/rename.mjs <name> [domain] [--display "Name"]`; display defaults to the name title-cased. Order of replacement: domain first, then display name, then app name.
-- [ ] **Step 3: template-cleanup.yml**
+- [x] **Step 1: Test** — copy a fixture tree (`fixtures/rename/`: one `.jsonc`, one `.md`, one `.ts` containing `cf-app`, `CF App`, `cf-app.example.com`) to a temp dir, run `renameTree(dir, {name:"acme", display:"Acme", domain:"acme.dev"})`, assert every occurrence replaced, binary/ignored dirs untouched (`node_modules`, `.git`, `dist`), and a second run is a no-op (same content).
+- [x] **Step 2: Implement** `rename.mjs` exporting `renameTree` and running as CLI: `node scripts/rename.mjs <name> [domain] [--display "Name"]`; display defaults to the name title-cased. Order of replacement: domain first, then display name, then app name.
+- [x] **Step 3: template-cleanup.yml**
 
 ```yaml
 name: template-cleanup
@@ -543,14 +545,14 @@ jobs:
           git add -A && git commit -m "chore: initialise from template" && git push
 ```
 
-- [ ] **Step 4: Issue/PR templates** — PR template has the gate checklist (typecheck/test/build/e2e/browser smoke/solutions entry).
-- [ ] **Step 5: Gate + commit** — `gcm "chore(template): rename script, first-push cleanup workflow and GitHub templates"`
+- [x] **Step 4: Issue/PR templates** — PR template has the gate checklist (typecheck/test/build/e2e/browser smoke/solutions entry).
+- [x] **Step 5: Gate + commit** — `gcm "chore(template): rename script, first-push cleanup workflow and GitHub templates"`
 
 ---
 
 ### Task 12: Final verification
 
-- [ ] **Step 1:** `pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e` — all green, capture output.
-- [ ] **Step 2:** `grep -ri "farol\|tenant\|pt-BR\|imóve" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=docs/superpowers .` → only the spec/plan may mention FarolImob.
-- [ ] **Step 3:** Fresh-clone check: `git clone . /tmp/cfapp && cd /tmp/cfapp && SHARP_IGNORE_GLOBAL_LIBVIPS=1 pnpm install && pnpm test` green.
-- [ ] **Step 4:** Report: repo path, commit list, the `gh repo create` command, and the Workers Builds settings to enter.
+- [x] **Step 1:** `pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e` — all green, capture output.
+- [x] **Step 2:** `grep -ri "farol\|tenant\|pt-BR\|imóve" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=docs/superpowers .` → only the spec/plan may mention FarolImob.
+- [x] **Step 3:** Fresh-clone check: `git clone . /tmp/cfapp && cd /tmp/cfapp && SHARP_IGNORE_GLOBAL_LIBVIPS=1 pnpm install && pnpm test` green.
+- [x] **Step 4:** Report: repo path, commit list, the `gh repo create` command, and the Workers Builds settings to enter.

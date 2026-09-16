@@ -65,7 +65,7 @@ always safe to run.
 | Example resource | `src/db/items.ts`, `src/pages/api/admin/items/`, `src/pages/admin/items/`, `src/pages/items/` | One full vertical slice: copy it, then delete it |
 | Media | `src/pages/api/admin/items/[id]/image.ts`, `src/pages/media/` | R2 upload + safe streaming |
 | UI | `src/layouts/`, `src/components/`, `src/styles/global.css`, `brand-kit/` | Neutral tokens, admin chrome, error pages |
-| Tests | `test/`, `e2e/` | 67 vitest specs against real D1/R2; 3 Playwright flows |
+| Tests | `test/`, `e2e/` | 70 vitest specs against real D1/R2; 3 Playwright flows |
 | Infra | `infra/`, `docs/deploying.md` | Pulumi provisions; Workers Builds deploys |
 | Agent handbook | `AGENTS.md`, `.claude/skills/`, `docs/solutions/` | Conventions, review skill, feature recipe, postmortems |
 
