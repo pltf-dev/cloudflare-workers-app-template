@@ -1,0 +1,14 @@
+---
+interface Props { tone?: "ink" | "paper" | "paper-2"; id?: string; class?: string; pad?: "normal" | "tight" }
+const { tone = "paper", id, class: className = "", pad = "normal" } = Astro.props;
+---
+<section id={id} class:list={["section", `tone-${tone}`, pad === "tight" && "pad-tight", className]}>
+  <div class="wrap"><slot /></div>
+</section>
+<style>
+  .section { padding: 72px 0; }
+  .section.pad-tight { padding: 32px 0 56px; }
+  .tone-ink { background: var(--color-ink); color: var(--color-on-dark); }
+  .tone-paper { background: var(--color-paper); }
+  .tone-paper-2 { background: var(--color-paper-2); }
+</style>

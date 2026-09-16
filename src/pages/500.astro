@@ -1,0 +1,19 @@
+---
+// Rendered when an SSR handler throws (production build only; dev shows Astro's
+// overlay). Astro.props.error is ignored on purpose so no stack trace, file path
+// or internal detail ever reaches the browser.
+import ErrorScreen from "../components/site/ErrorScreen.astro";
+
+Astro.response.status = 500;
+---
+<ErrorScreen
+  code="500"
+  eyebrow="Temporary failure"
+  pageTitle="Something went wrong — CF App"
+  title="Something went wrong on our side"
+  message="We hit a problem while loading this page. Try again in a moment, or go back home."
+  actions={[
+    { label: "Go home", href: "/", variant: "accent" },
+    { label: "Sign in", href: "/login", variant: "ghost" },
+  ]}
+/>

@@ -1,0 +1,31 @@
+---
+import "../styles/global.css";
+import Header from "../components/site/Header.astro";
+import Footer from "../components/site/Footer.astro";
+import Toast from "../components/ui/Toast.astro";
+
+interface Props { title: string; description?: string }
+const { title, description = "" } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).href;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <slot name="head" />
+  </head>
+  <body>
+    <Header />
+    <slot />
+    <Footer />
+    <Toast />
+  </body>
+</html>

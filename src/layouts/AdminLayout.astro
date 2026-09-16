@@ -1,0 +1,43 @@
+---
+// Shared chrome for every authenticated /admin page: document head, the sticky
+// AdminHeader (brand bar + page-title band) and the single centered content
+// column. A page only supplies its props and its content in the slot.
+import AdminHeader from "../components/admin/AdminHeader.astro";
+import Toast from "../components/ui/Toast.astro";
+import type { NavKey } from "../lib/admin/nav";
+import "../styles/global.css";
+
+interface Props {
+  /** Page-title band heading (also the browser tab title unless `docTitle` is set). */
+  title: string;
+  eyebrow?: string;
+  sub?: string;
+  /** Which nav item is current. Omit on a page that isn't a nav destination. */
+  active?: NavKey;
+  /** Optional primary action rendered on the right of the title band. */
+  primary?: { label: string; href: string };
+  docTitle?: string;
+}
+const { title, eyebrow, sub, active, primary, docTitle } = Astro.props;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{docTitle ?? title} — Admin · CF App</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <AdminHeader title={title} eyebrow={eyebrow} sub={sub} active={active} primary={primary} />
+    <main class="admin-page">
+      <slot />
+    </main>
+    <Toast />
+    <style is:global>
+      /* Reserve the scrollbar gutter so the centered column (and the sticky bar)
+         never shift sideways when navigating between short and tall pages. */
+      html { scrollbar-gutter: stable; }
+      .admin-page { max-width: 1080px; margin: 0 auto; padding: 0 20px 72px; }
+    </style>
+  </body>
+</html>

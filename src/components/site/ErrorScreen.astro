@@ -1,0 +1,66 @@
+---
+// Brand-styled error screen for 404 / 500. Deliberately DB- and env-independent
+// so it renders even when the app is on fire (a broken binding, a thrown SSR
+// handler). It never receives or renders the underlying error.
+import "../../styles/global.css";
+import Button from "../ui/Button.astro";
+import Logo from "../ui/Logo.astro";
+import Eyebrow from "../ui/Eyebrow.astro";
+
+interface Action { label: string; href: string; variant: "accent" | "ghost" }
+interface Props {
+  code: string;
+  eyebrow: string;
+  title: string;
+  message: string;
+  pageTitle: string;
+  actions: Action[];
+}
+const { code, eyebrow, title, message, pageTitle, actions } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="err-body">
+    <main class="err">
+      <div class="err-inner">
+        <a class="err-brand" href="/" aria-label="Home"><Logo tone="dark" /></a>
+        <Eyebrow on="dark">{eyebrow}</Eyebrow>
+        <p class="err-code" aria-hidden="true">{code}</p>
+        <h1>{title}</h1>
+        <p class="err-msg">{message}</p>
+        <div class="err-cta">
+          {actions.map((a) => <Button variant={a.variant} href={a.href}>{a.label}</Button>)}
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  .err-body { min-height: 100vh; background: var(--color-ink); }
+  .err {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 72px 24px; color: var(--color-on-dark);
+    background: radial-gradient(120% 80% at 50% 8%, var(--color-ink-2) 0%, var(--color-ink) 58%);
+  }
+  .err-inner { display: flex; flex-direction: column; align-items: center; max-width: 560px; text-align: center; }
+  .err-brand { margin-bottom: 40px; display: inline-flex; }
+  .err-code {
+    font-family: var(--font-display); font-weight: 600; line-height: 1;
+    font-size: clamp(5rem, 18vw, 10rem); margin: 10px 0 0; color: var(--color-accent-2);
+  }
+  h1 { font-size: clamp(1.7rem, 4.4vw, 2.4rem); margin: 18px 0 0; text-wrap: balance; }
+  .err-msg { color: var(--color-on-dark-dim); font-size: 1.05rem; margin: 16px auto 0; max-width: 42ch; }
+  .err-cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 32px; }
+  @media (max-width: 560px) {
+    .err-cta { flex-direction: column; align-items: stretch; width: 100%; }
+    .err-cta :global(.btn) { justify-content: center; }
+  }
+</style>

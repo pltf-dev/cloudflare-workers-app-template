@@ -1,0 +1,45 @@
+---
+// Toast host. Mounted once per page by the layouts. Fire via lib/toast.ts
+// `showToast(msg, variant)` or `window.dispatchEvent(new CustomEvent("app:toast", {detail}))`.
+---
+<div id="app-toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script is:inline>
+  (() => {
+    const host = document.getElementById("app-toasts");
+    if (!host) return;
+    window.addEventListener("app:toast", (e) => {
+      const { message, variant = "success" } = e.detail ?? {};
+      if (!message) return;
+      const el = document.createElement("div");
+      el.className = "app-toast " + (variant === "error" ? "is-error" : "is-success");
+      el.setAttribute("role", variant === "error" ? "alert" : "status");
+      el.textContent = message;
+      host.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("show"));
+      const kill = () => {
+        el.classList.remove("show");
+        el.addEventListener("transitionend", () => el.remove(), { once: true });
+        setTimeout(() => el.remove(), 400);
+      };
+      setTimeout(kill, 3200);
+      el.addEventListener("click", kill);
+    });
+  })();
+</script>
+
+<style is:global>
+  #app-toasts {
+    position: fixed; z-index: 60; right: 20px; bottom: 20px;
+    display: flex; flex-direction: column; gap: 10px; max-width: min(92vw, 360px);
+  }
+  .app-toast {
+    font-family: var(--font-sans); font-size: .92rem; font-weight: 500;
+    color: #fff; padding: .8rem 1.05rem; border-radius: 12px; cursor: pointer;
+    box-shadow: 0 18px 40px -18px rgba(20, 23, 28, .55);
+    opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s;
+  }
+  .app-toast.show { opacity: 1; transform: translateY(0); }
+  .app-toast.is-success { background: var(--color-success); }
+  .app-toast.is-error { background: var(--color-error); }
+</style>

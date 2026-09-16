@@ -1,0 +1,23 @@
+---
+import Logo from "../ui/Logo.astro";
+---
+<header class="site-header">
+  <div class="wrap inner">
+    <a class="brand" href="/" aria-label="CF App home"><Logo tone="dark" /></a>
+    <nav aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/admin" class="admin-link">Admin</a>
+    </nav>
+  </div>
+</header>
+<style>
+  .site-header { background: var(--color-ink); color: var(--color-on-dark); }
+  .inner { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 20px; }
+  .brand { text-decoration: none; display: inline-flex; }
+  nav { display: flex; gap: 18px; align-items: center; }
+  nav a { color: var(--color-on-dark-dim); text-decoration: none; font-weight: 500; font-size: .94rem; }
+  nav a:hover { color: var(--color-on-dark); }
+  .admin-link {
+    padding: 6px 14px; border-radius: 999px; border: 1px solid var(--color-line-dark);
+  }
+</style>

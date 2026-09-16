@@ -1,0 +1,75 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import { getDb } from "../../db/client";
+import { getUserById } from "../../db/users";
+import { listSessions } from "../../lib/auth/session";
+import { describeUserAgent } from "../../lib/auth/user-agent";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+const userId = Astro.locals.userId;
+const sessionId = Astro.locals.sessionId;
+if (!userId || !sessionId) return Astro.redirect("/login");
+
+const db = getDb(env.DB);
+const [user, sessions] = await Promise.all([getUserById(db, userId), listSessions(db, userId)]);
+if (!user) return Astro.redirect("/login");
+
+const saved = Astro.url.searchParams.get("saved");
+const error = Astro.url.searchParams.get("error");
+const others = sessions.filter((s) => s.id !== sessionId);
+
+const fmt = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" });
+---
+<AdminLayout eyebrow="Settings" title="Account" sub="Who you are and where you're signed in." active="account">
+  {saved === "device" && <div class="banner ok">Device signed out.</div>}
+  {saved === "devices" && <div class="banner ok">All other devices were signed out.</div>}
+  {error && <div class="banner err">That device couldn't be signed out.</div>}
+
+  <section class="card">
+    <h2>Profile</h2>
+    <dl class="kv">
+      <dt>Email</dt><dd>{user.email}</dd>
+      <dt>Member since</dt><dd>{fmt.format(user.createdAt)}</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Devices</h2>
+      {others.length > 0 && (
+        <form method="post" action="/api/admin/sessions/revoke">
+          <input type="hidden" name="all" value="1" />
+          <button type="submit" class="btn-pill btn-pill--danger">Sign out other devices</button>
+        </form>
+      )}
+    </div>
+    <ul class="devices">
+      {sessions.map((s) => (
+        <li class:list={["device", { current: s.id === sessionId }]}>
+          <div>
+            <p class="device-name">{describeUserAgent(s.userAgent)}{s.id === sessionId && <span class="badge published">This device</span>}</p>
+            <p class="hint">{s.location ?? "Unknown location"} · last seen {fmt.format(s.lastSeen)}</p>
+          </div>
+          {s.id !== sessionId && (
+            <form method="post" action="/api/admin/sessions/revoke">
+              <input type="hidden" name="id" value={s.id} />
+              <button type="submit" class="btn-pill">Sign out</button>
+            </form>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <style>
+    .card + .card { margin-top: 20px; }
+    h2 { font-size: 1.15rem; margin-bottom: 14px; color: var(--color-ink); }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .kv { display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; font-size: .95rem; }
+    .kv dt { color: var(--color-muted); }
+    .devices { list-style: none; padding: 0; margin: 0; }
+    .device { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--color-line); }
+    .device-name { font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  </style>
+</AdminLayout>

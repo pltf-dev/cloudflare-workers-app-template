@@ -1,0 +1,161 @@
+---
+import { adminNavSections, type NavKey } from "../../lib/admin/nav";
+import Logo from "../ui/Logo.astro";
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  sub?: string;
+  /** Omitted on pages that aren't a nav destination: then nothing is highlighted. */
+  active?: NavKey;
+  primary?: { label: string; href: string };
+}
+const { title, eyebrow, sub, active, primary } = Astro.props;
+
+const sections = adminNavSections();
+const [inline] = sections;
+// Marks the trigger when the current page is only reachable through the menu, so
+// "you are here" survives being collapsed behind a button.
+const menuHoldsActive = active !== undefined && !inline.items.some((i) => i.key === active);
+---
+<header class="topbar">
+  <div class="wrap bar-inner">
+    <a class="brand" href="/admin" aria-label="CF App admin"><Logo tone="dark" /></a>
+    <nav class="nav" aria-label="Admin">
+      <div class="inline-links">
+        {inline.items.map((item) => (
+          <a
+            class:list={["nav-link", { active: item.key === active }]}
+            href={item.href}
+            aria-current={item.key === active ? "page" : undefined}
+          >{item.label}</a>
+        ))}
+      </div>
+      <div class="menu-host">
+        <button type="button" class:list={["menu-btn", { active: menuHoldsActive }]} aria-expanded="false" aria-controls="admin-menu">
+          <svg class="icon-burger" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <span class="btn-label btn-label--wide">Account</span>
+          <span class="btn-label btn-label--narrow">Menu</span>
+          <svg class="icon-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        {/* One panel for both breakpoints: a dropdown on desktop, a full-width sheet
+            on phones. The inline section is repeated here as `.narrow-only`. */}
+        <div class="menu" id="admin-menu" hidden>
+          {sections.map((section) => (
+            <div class:list={["menu-group", { "narrow-only": section.id === inline.id }]}>
+              <p class="menu-cap">{section.label}</p>
+              {section.items.map((item) => (
+                <a
+                  class:list={["menu-link", { active: item.key === active }]}
+                  href={item.href}
+                  aria-current={item.key === active ? "page" : undefined}
+                >{item.label}</a>
+              ))}
+            </div>
+          ))}
+          <div class="menu-group">
+            <button type="button" class="menu-link logout" data-logout>Sign out</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+{/* The per-page action lives in this second band so the top bar never resizes. */}
+<div class="pagehead">
+  <div class="wrap head-inner">
+    <div class="titles">
+      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+      <h1>{title}</h1>
+      {sub && <p class="sub">{sub}</p>}
+    </div>
+    {primary && <div class="actions"><a class="primary" href={primary.href}>{primary.label}</a></div>}
+  </div>
+</div>
+<style>
+  .topbar { position: sticky; top: 0; z-index: 50; background: var(--color-ink); box-shadow: 0 1px 0 var(--color-line-dark); }
+  .bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 64px; }
+  .brand { display: inline-flex; align-items: center; text-decoration: none; flex: 0 0 auto; }
+  .nav { display: flex; align-items: center; gap: 22px; }
+  .inline-links { display: flex; align-items: center; gap: 22px; }
+  .nav-link { color: var(--color-on-dark-dim); font-weight: 500; font-size: .92rem; text-decoration: none; white-space: nowrap; padding: 6px 0; transition: color .18s; }
+  .nav-link:hover { color: var(--color-on-dark); }
+  .nav-link.active { color: var(--color-on-dark); box-shadow: inset 0 -2px 0 var(--color-accent-2); }
+
+  .menu-host { position: relative; flex: 0 0 auto; }
+  .menu-btn {
+    display: inline-flex; align-items: center; gap: .45em; min-height: 40px;
+    padding: 7px 14px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--color-line-dark); background: rgba(255, 255, 255, .05);
+    color: var(--color-on-dark-dim); font: inherit; font-size: .92rem; font-weight: 500;
+    transition: color .18s, border-color .18s, background .18s;
+  }
+  .menu-btn:hover { color: var(--color-on-dark); border-color: rgba(255, 255, 255, .3); }
+  .menu-btn.active { color: var(--color-on-dark); border-color: var(--color-accent-2); }
+  .menu-btn[aria-expanded="true"] { color: var(--color-on-dark); background: rgba(255, 255, 255, .1); }
+  .menu-btn[aria-expanded="true"] .icon-chevron { transform: rotate(180deg); }
+  .icon-chevron { transition: transform .18s; }
+  .icon-burger, .btn-label--narrow, .narrow-only { display: none; }
+
+  .menu {
+    position: absolute; top: calc(100% + 10px); right: 0; z-index: 60;
+    display: flex; flex-direction: column; gap: 6px; min-width: 224px;
+    padding: 10px; border-radius: 16px;
+    background: var(--color-ink-2); border: 1px solid var(--color-line-dark);
+    box-shadow: 0 26px 50px -22px rgba(0, 0, 0, .7);
+  }
+  .menu[hidden] { display: none; }
+  .menu-group:not(:last-child) { margin-bottom: 4px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+  .menu-cap { font-size: .66rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--color-on-dark-dim); opacity: .75; padding: 4px 10px 6px; }
+  .menu-link {
+    display: flex; align-items: center; width: 100%; min-height: 44px;
+    padding: 8px 10px; border-radius: 10px; border: 0; background: none;
+    color: var(--color-on-dark); font: inherit; font-size: .95rem; font-weight: 500;
+    text-align: left; text-decoration: none; cursor: pointer; transition: background .15s;
+  }
+  .menu-link:hover { background: rgba(255, 255, 255, .08); }
+  .menu-link.active { background: color-mix(in oklab, var(--color-accent) 18%, transparent); color: var(--color-accent-2); }
+  .logout { color: var(--color-on-dark-dim); }
+  .logout:hover { color: var(--color-on-dark); }
+
+  .pagehead { background: var(--color-paper); }
+  .head-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-top: 30px; padding-bottom: 22px; }
+  .titles { min-width: 0; }
+  .eyebrow { font-size: .72rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--color-accent); }
+  .titles h1 { font-size: clamp(1.9rem, 4vw, 2.4rem); margin: 6px 0 4px; color: var(--color-ink); }
+  .sub { color: var(--color-muted); font-size: .95rem; }
+  .actions { flex: 0 0 auto; }
+  .primary { display: inline-block; background: var(--color-accent); color: var(--color-on-accent); font-weight: 700; font-size: .9rem; border-radius: 999px; padding: .6rem 1.25rem; text-decoration: none; white-space: nowrap; transition: transform .15s, box-shadow .2s; }
+  .primary:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -12px color-mix(in oklab, var(--color-accent) 60%, transparent); }
+
+  @media (max-width: 720px) {
+    .head-inner { padding-top: 22px; padding-bottom: 18px; }
+    .inline-links { display: none; }
+    .narrow-only { display: block; }
+    .btn-label--wide, .icon-chevron { display: none; }
+    .btn-label--narrow { display: inline; }
+    .icon-burger { display: inline-flex; }
+    /* Positioning against .topbar (sticky, so it is the containing block) makes the
+       panel a full-width sheet pinned under the bar. */
+    .menu-host { position: static; }
+    .menu {
+      top: 100%; left: 0; right: 0;
+      max-height: 74dvh; overflow-y: auto;
+      padding: 12px 20px 20px;
+      border-radius: 0 0 18px 18px; border-left: 0; border-right: 0;
+    }
+  }
+</style>
+<script>
+  import { wireHeaderMenu } from "../../lib/header-menu";
+
+  wireHeaderMenu("admin-menu");
+
+  document.querySelector<HTMLButtonElement>("[data-logout]")?.addEventListener("click", async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      window.location.href = "/login";
+    }
+  });
+</script>

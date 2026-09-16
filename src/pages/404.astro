@@ -1,0 +1,17 @@
+---
+// Rendered by Astro for any route that doesn't match (SSR returns 404).
+import ErrorScreen from "../components/site/ErrorScreen.astro";
+
+Astro.response.status = 404;
+---
+<ErrorScreen
+  code="404"
+  eyebrow="Page not found"
+  pageTitle="Page not found — CF App"
+  title="There's nothing at this address"
+  message="The page you opened doesn't exist, or it moved. Head back home or sign in to the admin."
+  actions={[
+    { label: "Go home", href: "/", variant: "accent" },
+    { label: "Sign in", href: "/login", variant: "ghost" },
+  ]}
+/>
