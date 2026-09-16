@@ -39,3 +39,19 @@ export const authCodes = sqliteTable("auth_codes", {
   // The token alone identifies the row, so no email needs to ride in the URL.
   uniqueIndex("auth_codes_link_token_idx").on(table.linkTokenHash),
 ]);
+
+// Example resource. Everything under "items" exists to show one full vertical
+// slice (schema → repository → endpoints → pages → tests). Delete it when you
+// start your own resource: see docs/adding-a-feature.md.
+export const items = sqliteTable("items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  body: text("body").notNull().default(""),
+  status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
+  imageKey: text("image_key"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("items_status_created_idx").on(table.status, table.createdAt),
+]);
