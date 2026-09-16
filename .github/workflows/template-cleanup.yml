@@ -1,0 +1,28 @@
+# Runs once, on the first push of a repository created from the template: renames the
+# placeholders to the new repo's name and removes itself. Skipped in the template repo.
+name: template-cleanup
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  cleanup:
+    if: github.event.repository.name != 'cloudflare-workers-app-template'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - name: rename placeholders to the repository name
+        run: node scripts/rename.mjs "$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-\n' '-')"
+      - run: rm .github/workflows/template-cleanup.yml
+      - name: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          gcm -m "chore: initialise from cloudflare-workers-app-template"
+          git push

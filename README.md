@@ -28,8 +28,10 @@ placeholders to your repo name and deletes itself. Cloning by hand instead? Run:
 pnpm rename my-app my-app.example.com      # app name, then your domain
 ```
 
-That rewrites `cf-app` (Worker, D1, R2 names), `CF App` (display name) and
-`cf-app.example.com` everywhere. It is idempotent.
+That rewrites the three placeholders everywhere: the app name (Worker, D1 and R2 names),
+the display name (derived from the app name unless you pass `--display "Name"`) and the
+domain. It is idempotent, and it leaves `scripts/rename-content.mjs` alone so it can be
+run again later.
 
 ## Local development
 
