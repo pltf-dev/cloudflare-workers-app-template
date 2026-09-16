@@ -1,0 +1,177 @@
+---
+export const prerender = false;
+import "../styles/global.css";
+import Logo from "../components/ui/Logo.astro";
+
+// The magic-link route sends every failure here with one generic marker:
+// expired, already used and malformed are deliberately indistinguishable.
+const linkError = Astro.url.searchParams.get("error") === "link";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign in — CF App</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="login-body">
+    <main class="card login-card">
+      <a class="brand" href="/" aria-label="CF App home"><Logo tone="light" /></a>
+
+      <section id="step-email" class="step active">
+        <h1>Sign in</h1>
+        {linkError && (
+          <div class="banner err">That link has expired or was already used. Enter your email to get a new code.</div>
+        )}
+        <p class="subtitle">Enter your email and we'll send you a one-time code.</p>
+        <form id="email-form">
+          <div class="field">
+            <label for="email">Your email</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <button type="submit" class="submit">Send code</button>
+        </form>
+        <p id="email-error" class="error" role="alert"></p>
+        <p class="hint center">New here? Enter your email and your account is created on first sign-in.</p>
+      </section>
+
+      <section id="step-code" class="step">
+        <h1>Check your email</h1>
+        <p class="subtitle">We sent a 6-digit code to <strong id="display-email"></strong></p>
+        <form id="code-form">
+          <div class="field">
+            <label for="code">Code</label>
+            <input type="text" id="code" name="code" class="otp-input" maxlength="7" inputmode="numeric" autocomplete="one-time-code" required />
+          </div>
+          <button type="submit" class="submit">Verify</button>
+        </form>
+        <p id="code-error" class="error" role="alert"></p>
+        <button type="button" id="back-to-email" class="back-link">Use another email</button>
+      </section>
+    </main>
+
+    <style>
+      .login-body {
+        min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+      }
+      .login-card { width: 100%; max-width: 400px; padding: 40px 32px; }
+      .brand { display: flex; justify-content: center; margin-bottom: 28px; text-decoration: none; }
+      h1 { font-size: 1.5rem; text-align: center; margin-bottom: 6px; color: var(--color-ink); }
+      .subtitle { text-align: center; color: var(--color-muted); font-size: .92rem; margin-bottom: 22px; }
+      .otp-input { text-align: center; font-size: 1.5rem; letter-spacing: 8px; font-weight: 600; }
+      .submit {
+        width: 100%; padding: 13px; border: 0; border-radius: 10px; cursor: pointer;
+        background: var(--color-accent); color: var(--color-on-accent);
+        font: inherit; font-size: 1rem; font-weight: 600; transition: background .15s;
+      }
+      .submit:hover { background: var(--color-accent-2); }
+      .submit:disabled { opacity: .6; cursor: not-allowed; }
+      .error { color: var(--color-error); font-size: .84rem; text-align: center; margin-top: 12px; min-height: 1.2em; }
+      .center { text-align: center; margin-top: 18px; }
+      .step { display: none; }
+      .step.active { display: block; }
+      .back-link {
+        display: block; margin: 14px auto 0; background: none; border: 0; cursor: pointer;
+        font: inherit; font-size: .84rem; color: var(--color-muted); text-decoration: underline;
+      }
+    </style>
+
+    <script is:inline>
+      const stepEmail = document.getElementById("step-email");
+      const stepCode = document.getElementById("step-code");
+      const emailForm = document.getElementById("email-form");
+      const codeForm = document.getElementById("code-form");
+      const emailInput = document.getElementById("email");
+      const codeInput = document.getElementById("code");
+      const displayEmail = document.getElementById("display-email");
+      const emailError = document.getElementById("email-error");
+      const codeError = document.getElementById("code-error");
+      const backLink = document.getElementById("back-to-email");
+
+      let currentEmail = "";
+
+      function showStep(step) {
+        stepEmail.classList.toggle("active", step === "email");
+        stepCode.classList.toggle("active", step === "code");
+      }
+
+      emailForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        emailError.textContent = "";
+        const btn = emailForm.querySelector("button");
+        btn.disabled = true;
+        currentEmail = emailInput.value.trim().toLowerCase();
+        try {
+          const res = await fetch("/api/auth/send-code", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: currentEmail }),
+          });
+          if (res.status === 400) {
+            emailError.textContent = "That email address doesn't look right.";
+          } else {
+            displayEmail.textContent = currentEmail;
+            showStep("code");
+            codeInput.focus();
+          }
+        } catch {
+          emailError.textContent = "Couldn't send the code. Please try again.";
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      codeForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        codeError.textContent = "";
+        const btn = codeForm.querySelector("button");
+        btn.disabled = true;
+        const code = codeInput.value.replace(/\D/g, "").slice(0, 6);
+        try {
+          const res = await fetch("/api/auth/verify-code", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: currentEmail, code }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            // Only same-origin destinations. The middleware only ever puts an encoded
+            // pathname here, so anything else is attacker-supplied: "//evil.example"
+            // and "/\evil.example" both resolve to another origin, and "javascript:"
+            // still executes when assigned to location.href. Resolving against our
+            // own origin and comparing catches all of those; a regex does not.
+            const rawNext = new URLSearchParams(window.location.search).get("next");
+            let safeNext = "/admin";
+            if (rawNext) {
+              try {
+                const target = new URL(rawNext, window.location.origin);
+                if (target.origin === window.location.origin) {
+                  safeNext = target.pathname + target.search + target.hash;
+                }
+              } catch { /* malformed → /admin */ }
+            }
+            window.location.href = safeNext;
+          } else if (data.error === "not_allowed") {
+            codeError.textContent = "This email isn't allowed to sign in here.";
+          } else {
+            codeError.textContent = "That code is invalid or has expired. Try again.";
+            codeInput.value = "";
+            codeInput.focus();
+          }
+        } catch {
+          codeError.textContent = "Couldn't verify the code. Please try again.";
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      backLink.addEventListener("click", () => {
+        showStep("email");
+        codeInput.value = "";
+        codeError.textContent = "";
+        emailInput.focus();
+      });
+    </script>
+  </body>
+</html>
