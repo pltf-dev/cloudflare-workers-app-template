@@ -1,0 +1,4 @@
+# Copy to .dev.vars (gitignored). Only OTP_HMAC_SECRET is needed for local dev.
+OTP_HMAC_SECRET="replace-with-the-output-of: openssl rand -hex 32"
+# RESEND_API_KEY="re_..."            # unused in dev: the login code is printed to the console
+# AUTH_ALLOWED_EMAILS="you@example.com,teammate@example.com"

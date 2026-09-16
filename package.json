@@ -1,0 +1,45 @@
+{
+  "name": "cf-app",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "wrangler dev",
+    "deploy": "astro build && wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply cf-app --local",
+    "db:migrate:remote": "wrangler d1 migrations apply cf-app --remote",
+    "typecheck": "astro check",
+    "rename": "node scripts/rename.mjs"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.7.0",
+    "@astrojs/react": "^5.0.7",
+    "@tailwindcss/vite": "^4.3.1",
+    "astro": "^6.4.6",
+    "drizzle-orm": "^0.45.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@cloudflare/vitest-pool-workers": "^0.16.15",
+    "@cloudflare/workers-types": "^4.20260615.1",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9",
+    "wrangler": "^4.100.0"
+  }
+}

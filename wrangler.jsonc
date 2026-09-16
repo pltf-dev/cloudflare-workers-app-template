@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cf-app",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // `main` and `assets` are intentionally omitted: the @astrojs/cloudflare v13 adapter
+  // writes the resolved deploy config (entrypoint + ASSETS binding) to
+  // dist/server/wrangler.json at build time. This file only carries shared metadata
+  // and bindings. Adding them back breaks `pnpm build`.
+  "observability": { "enabled": true },
+  // Uncomment once the zone exists in your Cloudflare account. `custom_domain: true`
+  // makes Wrangler create the DNS record and certificate on deploy, and
+  // `workers_dev: false` keeps the app off the ungated *.workers.dev URL.
+  // "workers_dev": false,
+  // "routes": [{ "pattern": "cf-app.example.com", "custom_domain": true }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cf-app",
+      // Replace with the id Pulumi prints (`infra/pulumi.sh stack output d1DatabaseId`).
+      // An identifier, not a secret: it belongs in committed config.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "cf-app-media" }],
+  "vars": {
+    // Public origin used for links in emails. Dev uses the request origin instead.
+    "APP_ORIGIN": "https://cf-app.example.com"
+  }
+}

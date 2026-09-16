@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.astro/
+.wrangler/
+.dev.vars
+.claude/settings.local.json
+
+# Pulumi: state lives in the R2 backend; only local deps and secrets are ignored
+infra/node_modules/
+infra/.env
+
+# Playwright E2E: scratch D1/R2 state, saved session, reports
+.e2e/
+playwright-report/
+test-results/
