@@ -1,0 +1,37 @@
+---
+import type { Item } from "../../db/items";
+interface Props { action: string; item?: Item | null; submitLabel: string }
+const { action, item = null, submitLabel } = Astro.props;
+---
+<form method="post" action={action} class="item-form">
+  <div class="field">
+    <label for="title">Title</label>
+    <input id="title" name="title" type="text" required maxlength="200" value={item?.title ?? ""} autocomplete="off" />
+  </div>
+  <div class="field">
+    <label for="body">Body</label>
+    <textarea id="body" name="body" rows="8">{item?.body ?? ""}</textarea>
+    <p class="hint">Plain text. Blank lines start a new paragraph.</p>
+  </div>
+  <div class="field">
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="draft" selected={(item?.status ?? "draft") === "draft"}>Draft</option>
+      <option value="published" selected={item?.status === "published"}>Published</option>
+    </select>
+    <p class="hint">Only published items appear on the public site and in the API.</p>
+  </div>
+  <div class="actions">
+    <button type="submit" class="primary">{submitLabel}</button>
+    <a href="/admin/items" class="btn-pill">Cancel</a>
+  </div>
+</form>
+<style>
+  .actions { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+  .primary {
+    background: var(--color-accent); color: var(--color-on-accent); border: 0; cursor: pointer;
+    font: inherit; font-weight: 700; font-size: .95rem; border-radius: 999px; padding: .7rem 1.4rem;
+    transition: transform .15s, box-shadow .2s;
+  }
+  .primary:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -12px color-mix(in oklab, var(--color-accent) 60%, transparent); }
+</style>

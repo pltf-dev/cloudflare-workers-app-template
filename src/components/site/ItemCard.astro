@@ -1,0 +1,35 @@
+---
+import type { Item } from "../../db/items";
+interface Props { item: Item }
+const { item } = Astro.props;
+const date = new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(item.createdAt);
+---
+<article class="item-card">
+  <a href={`/items/${item.id}`} class="media" aria-hidden={!item.imageKey}>
+    {item.imageKey
+      ? <img src={`/media/${item.imageKey}`} alt="" loading="lazy" width="640" height="400" />
+      : <div class="placeholder"></div>}
+  </a>
+  <div class="body">
+    <p class="date">{date}</p>
+    <h3><a href={`/items/${item.id}`}>{item.title}</a></h3>
+    {item.body && <p class="excerpt">{item.body.slice(0, 160)}{item.body.length > 160 && "…"}</p>}
+  </div>
+</article>
+<style>
+  .item-card {
+    background: #fff; border: 1px solid var(--color-line); border-radius: var(--radius-brand);
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .15s, box-shadow .2s;
+  }
+  .item-card:hover { transform: translateY(-2px); box-shadow: 0 24px 50px -36px rgba(20, 23, 28, .5); }
+  .media { display: block; aspect-ratio: 16 / 10; background: var(--color-paper-2); }
+  .media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, var(--color-paper-2), var(--color-paper)); }
+  .body { padding: 18px 20px 22px; }
+  .date { font-size: .78rem; color: var(--color-muted); letter-spacing: .04em; text-transform: uppercase; }
+  h3 { font-size: 1.2rem; margin: 6px 0 8px; }
+  h3 a { color: var(--color-ink); text-decoration: none; }
+  h3 a:hover { color: var(--color-accent); }
+  .excerpt { color: var(--color-muted); font-size: .94rem; }
+</style>

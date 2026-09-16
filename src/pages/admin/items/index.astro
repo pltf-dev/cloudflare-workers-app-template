@@ -1,0 +1,63 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import { getDb } from "../../../db/client";
+import { listItemsForUser } from "../../../db/items";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+const userId = Astro.locals.userId;
+if (!userId) return Astro.redirect("/login");
+
+const items = await listItemsForUser(getDb(env.DB), userId);
+const deleted = Astro.url.searchParams.get("deleted") === "1";
+const fmt = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+---
+<AdminLayout
+  eyebrow="Manage"
+  title="Items"
+  sub="The example resource. Published items show up on the public site."
+  active="items"
+  primary={{ label: "New item", href: "/admin/items/new" }}
+>
+  {deleted && <div class="banner ok">Item deleted.</div>}
+
+  {items.length === 0 ? (
+    <div class="card empty">
+      <h2>No items yet.</h2>
+      <p>Create your first one and publish it to see it on the home page.</p>
+      <a class="btn-pill" href="/admin/items/new">New item</a>
+    </div>
+  ) : (
+    <ul class="list">
+      {items.map((item) => (
+        <li class="card row">
+          <div class="main">
+            <a class="title" href={`/admin/items/${item.id}/edit`}>{item.title}</a>
+            <p class="hint">Updated {fmt.format(item.updatedAt)}</p>
+          </div>
+          <span class:list={["badge", item.status]}>{item.status}</span>
+          <div class="row-actions">
+            {item.status === "published" && <a class="btn-pill" href={`/items/${item.id}`}>View</a>}
+            <a class="btn-pill" href={`/admin/items/${item.id}/edit`}>Edit</a>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <style>
+    .empty { text-align: center; padding: 48px 28px; }
+    .empty h2 { font-size: 1.3rem; margin-bottom: 6px; }
+    .empty p { color: var(--color-muted); margin-bottom: 18px; }
+    .list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+    .row { display: flex; align-items: center; gap: 18px; padding: 18px 22px; }
+    .main { flex: 1; min-width: 0; }
+    .title { font-weight: 600; color: var(--color-ink); text-decoration: none; font-size: 1.05rem; }
+    .title:hover { color: var(--color-accent); }
+    .row-actions { display: flex; gap: 8px; }
+    @media (max-width: 600px) {
+      .row { flex-wrap: wrap; }
+      .row-actions { width: 100%; }
+    }
+  </style>
+</AdminLayout>

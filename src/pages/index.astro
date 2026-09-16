@@ -1,0 +1,55 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import { getDb } from "../db/client";
+import { listPublishedItems } from "../db/items";
+import Layout from "../layouts/Layout.astro";
+import Section from "../components/ui/Section.astro";
+import Eyebrow from "../components/ui/Eyebrow.astro";
+import Button from "../components/ui/Button.astro";
+import ItemCard from "../components/site/ItemCard.astro";
+
+const items = await listPublishedItems(getDb(env.DB));
+---
+<Layout title="CF App" description="A full-stack app template for Cloudflare Workers.">
+  <Section tone="ink">
+    <div class="hero">
+      <Eyebrow on="dark">Cloudflare Workers app template</Eyebrow>
+      <h1>Ship a full-stack app on Workers <em>in an afternoon</em>.</h1>
+      <p class="lead">
+        Astro SSR, D1 with Drizzle, R2, passwordless sign-in and tests that run in the real
+        runtime. This page lists the published items from the example resource.
+      </p>
+      <div class="cta">
+        <Button href="/admin">Open the admin</Button>
+        <Button href="/api/items" variant="ghost">JSON API</Button>
+      </div>
+    </div>
+  </Section>
+
+  <Section pad="tight" id="items">
+    <div class="head">
+      <Eyebrow>Published items</Eyebrow>
+      <h2>Latest</h2>
+    </div>
+    {items.length === 0 ? (
+      <p class="empty">Nothing published yet. <a href="/admin/items/new">Create the first item</a> from the admin.</p>
+    ) : (
+      <div class="grid">
+        {items.map((item) => <ItemCard item={item} />)}
+      </div>
+    )}
+  </Section>
+</Layout>
+
+<style>
+  .hero { max-width: 720px; padding: 24px 0 8px; }
+  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); margin: 16px 0 18px; }
+  .hero em { color: var(--color-accent-2); font-style: italic; }
+  .lead { color: var(--color-on-dark-dim); font-size: 1.1rem; max-width: 56ch; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+  .head h2 { font-size: 1.8rem; margin: 8px 0 22px; }
+  .grid { display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .empty { color: var(--color-muted); }
+  .empty a { color: var(--color-accent); font-weight: 600; }
+</style>

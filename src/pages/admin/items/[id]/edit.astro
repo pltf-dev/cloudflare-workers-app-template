@@ -1,0 +1,50 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import { getDb } from "../../../../db/client";
+import { getItemForUser } from "../../../../db/items";
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import ItemForm from "../../../../components/admin/ItemForm.astro";
+import ItemImage from "../../../../components/admin/ItemImage";
+
+const userId = Astro.locals.userId;
+if (!userId) return Astro.redirect("/login");
+
+const id = Number(Astro.params.id);
+const item = Number.isInteger(id) && id > 0 ? await getItemForUser(getDb(env.DB), userId, id) : null;
+if (!item) return Astro.rewrite("/404");
+
+const saved = Astro.url.searchParams.get("saved") === "1";
+const error = Astro.url.searchParams.get("error");
+---
+<AdminLayout eyebrow="Manage" title={item.title} docTitle="Edit item" active="items" sub={`#${item.id} · ${item.status}`}>
+  {saved && <div class="banner ok">Saved.</div>}
+  {error && <div class="banner err">Give the item a title before saving.</div>}
+
+  <div class="cols">
+    <div class="card">
+      <ItemForm action={`/api/admin/items/${item.id}`} item={item} submitLabel="Save changes" />
+    </div>
+    <aside class="side">
+      <div class="card">
+        <h2>Image</h2>
+        <ItemImage client:load itemId={item.id} imageUrl={item.imageKey ? `/media/${item.imageKey}` : null} />
+      </div>
+      <div class="card danger">
+        <h2>Delete</h2>
+        <p class="hint">Removes the item and its image. This can't be undone.</p>
+        <form method="post" action={`/api/admin/items/${item.id}/delete`} onsubmit="return confirm('Delete this item?')">
+          <button type="submit" class="btn-pill btn-pill--danger">Delete item</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+
+  <style>
+    .cols { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+    .side { display: grid; gap: 20px; }
+    h2 { font-size: 1.05rem; margin-bottom: 12px; }
+    .danger p { margin-bottom: 12px; }
+    @media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+  </style>
+</AdminLayout>

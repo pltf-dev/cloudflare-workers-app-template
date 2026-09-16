@@ -1,0 +1,39 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import { getDb } from "../../db/client";
+import { getItem } from "../../db/items";
+import Layout from "../../layouts/Layout.astro";
+import Section from "../../components/ui/Section.astro";
+import Eyebrow from "../../components/ui/Eyebrow.astro";
+
+const id = Number(Astro.params.id);
+const item = Number.isInteger(id) && id > 0 ? await getItem(getDb(env.DB), id) : null;
+// Drafts are private: to the public they don't exist.
+if (!item || item.status !== "published") return Astro.rewrite("/404");
+
+const date = new Intl.DateTimeFormat("en", { dateStyle: "long" }).format(item.createdAt);
+const paragraphs = item.body.split(/\n{2,}/).filter((p) => p.trim().length > 0);
+---
+<Layout title={`${item.title} — CF App`} description={item.body.slice(0, 160)}>
+  <Section pad="tight">
+    <article class="item">
+      <a href="/#items" class="back">← All items</a>
+      <Eyebrow>{date}</Eyebrow>
+      <h1>{item.title}</h1>
+      {item.imageKey && (
+        <img class="cover" src={`/media/${item.imageKey}`} alt="" width="1200" height="750" />
+      )}
+      <div class="prose">{paragraphs.map((p) => <p>{p}</p>)}</div>
+    </article>
+  </Section>
+</Layout>
+
+<style>
+  .item { max-width: 720px; }
+  .back { display: inline-block; font-size: .9rem; color: var(--color-muted); text-decoration: none; margin-bottom: 22px; }
+  .back:hover { color: var(--color-accent); }
+  h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 10px 0 24px; }
+  .cover { width: 100%; height: auto; border-radius: var(--radius-brand); margin-bottom: 26px; display: block; }
+  .prose p { margin-bottom: 1em; font-size: 1.05rem; white-space: pre-wrap; }
+</style>

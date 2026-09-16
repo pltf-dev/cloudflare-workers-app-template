@@ -1,0 +1,14 @@
+---
+export const prerender = false;
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import ItemForm from "../../../components/admin/ItemForm.astro";
+
+if (!Astro.locals.userId) return Astro.redirect("/login");
+const error = Astro.url.searchParams.get("error");
+---
+<AdminLayout eyebrow="Manage" title="New item" sub="Save it as a draft first; you can add an image on the next screen." active="items">
+  {error && <div class="banner err">Give the item a title before saving.</div>}
+  <div class="card">
+    <ItemForm action="/api/admin/items" submitLabel="Create item" />
+  </div>
+</AdminLayout>
