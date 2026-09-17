@@ -3,7 +3,7 @@
   "name": "cf-app",
   "compatibility_date": "2025-09-01",
   "compatibility_flags": ["nodejs_compat"],
-  // `main` and `assets` are intentionally omitted: the @astrojs/cloudflare v13 adapter
+  // `main` and `assets` are intentionally omitted: the @astrojs/cloudflare v14 adapter
   // writes the resolved deploy config (entrypoint + ASSETS binding) to
   // dist/server/wrangler.json at build time. This file only carries shared metadata
   // and bindings. Adding them back breaks `pnpm build`.

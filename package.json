@@ -20,18 +20,18 @@
     "rename": "node scripts/rename.mjs"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.7.0",
-    "@astrojs/react": "^5.0.7",
+    "@astrojs/cloudflare": "^14.3.2",
+    "@astrojs/react": "^6.0.6",
     "@tailwindcss/vite": "^4.3.1",
-    "astro": "^6.4.6",
+    "astro": "^7.3.3",
     "drizzle-orm": "^0.45.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwindcss": "^4.3.1"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "@cloudflare/vitest-pool-workers": "^0.16.15",
+    "@astrojs/check": "^0.9.10",
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^4.20260615.1",
     "@playwright/test": "^1.62.1",
     "@types/node": "^25.9.3",
@@ -40,6 +40,6 @@
     "drizzle-kit": "^0.31.10",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9",
-    "wrangler": "^4.100.0"
+    "wrangler": "^4.133.0"
   }
 }

@@ -10,7 +10,7 @@ declare namespace App {
 type D1Database = import("@cloudflare/workers-types").D1Database;
 type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
 
-// Astro 6 + @astrojs/cloudflare 13 removed `Astro.locals.runtime.env`. Bindings are
+// Astro 7 + @astrojs/cloudflare 14 removed `Astro.locals.runtime.env`. Bindings are
 // read via `import { env } from "cloudflare:workers"`, which is typed as `Cloudflare.Env`.
 declare namespace Cloudflare {
   interface Env {

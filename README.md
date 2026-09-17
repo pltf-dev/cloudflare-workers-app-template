@@ -9,7 +9,7 @@ Everything here is exercised by its own test suite. A fresh clone is green on th
 
 ## Stack
 
-Astro 6 (SSR) · Cloudflare Workers / D1 / R2 · Drizzle ORM · Tailwind 4 · React 19 islands ·
+Astro 7 (SSR) · Cloudflare Workers / D1 / R2 · Drizzle ORM · Tailwind 4 · React 19 islands ·
 Vitest in workerd (`@cloudflare/vitest-pool-workers`) · Playwright · Pulumi (TypeScript) ·
 pnpm · Node 24+.
 
