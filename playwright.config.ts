@@ -39,7 +39,11 @@ export default defineConfig({
     // `globalSetup` hook: Playwright starts web servers BEFORE globalSetup, so
     // resetting there would delete the database out from under the running dev
     // server. See e2e/prepare-state.ts.
-    command: `node e2e/prepare-state.ts && pnpm dev --port ${PORT}`,
+    // `--ignore-lock` keeps `astro dev` in the foreground: Astro 7 daemonises it
+    // whenever it detects an agentic environment, and Playwright kills the run the
+    // moment its webServer process exits. The flag also skips the dev-server lock
+    // file, which is per-project-root and would otherwise be shared with `pnpm dev`.
+    command: `node e2e/prepare-state.ts && pnpm dev --port ${PORT} --ignore-lock`,
     url: BASE_URL,
     // Never adopt a dev server this suite didn't start: another checkout may be
     // running its own, and testing the wrong app is a silent failure mode.

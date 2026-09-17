@@ -3,7 +3,7 @@ import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-pool-worker
 import path from "node:path";
 
 export default defineConfig(async () => {
-  const migrations = await readD1Migrations(path.join(__dirname, "migrations"));
+  const migrations = await readD1Migrations(path.join(import.meta.dirname, "migrations"));
 
   return {
     plugins: [

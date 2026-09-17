@@ -48,7 +48,7 @@ One **Astro** app (SSR) deployed as a single Worker.
   sets `Astro.locals.userId` and `Astro.locals.sessionId`. Everything else is public.
 - **Bindings.** Read via `import { env } from "cloudflare:workers"`, typed on
   `Cloudflare.Env` in `src/env.d.ts`. `Astro.locals.runtime.env` no longer exists in
-  Astro 6; do not use it.
+  Astro 7; do not use it.
 - **DB.** Cloudflare D1 via Drizzle. Schema in `src/db/schema.ts`; `getDb(env.DB)` in
   `src/db/client.ts`; repositories in `src/db/*.ts` as pure functions taking `Db`.
   Migrations in `migrations/` (generated, then renamed to something descriptive).
@@ -116,11 +116,15 @@ One **Astro** app (SSR) deployed as a single Worker.
   returns the expected status (public `200`; `/admin*` without a session → `303` to
   `/login`), the key content renders, and there are no console or runtime errors. To
   reach a gated page, forge a session: `docs/solutions/local-smoke-testing-gated-admin-routes.md`.
+  Astro 7 daemonises `astro dev` when it detects an agentic environment, so `pnpm dev`
+  returns straight away — use `pnpm exec astro dev status|logs|stop` to drive it, and
+  always `stop` when you're done. Anything that needs a foreground server (Playwright's
+  `webServer`) must pass `--ignore-lock`.
 
 ## Invariants — do not violate
 
 - `wrangler.jsonc` intentionally **omits** `main`/`assets`. The `@astrojs/cloudflare`
-  v13 adapter emits `dist/server/wrangler.json` with those at build time. Adding them
+  v14 adapter emits `dist/server/wrangler.json` with those at build time. Adding them
   back breaks `pnpm build`.
 - `wrangler.jsonc`'s `database_id` is the **D1 id provisioned by Pulumi**. It is an
   identifier, not a secret, and belongs in committed config. The template ships a

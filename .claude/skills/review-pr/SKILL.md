@@ -50,7 +50,7 @@ Skip a dimension entirely if the diff has zero relevance to it. Silence means it
 ### 3. Cloudflare Workers
 
 - **Bindings over REST:** D1/R2 bindings, never the Cloudflare REST API from inside the Worker.
-- **Astro 6 binding access:** `import { env } from "cloudflare:workers"`; never
+- **Astro 7 binding access:** `import { env } from "cloudflare:workers"`; never
   `Astro.locals.runtime.env`. Tests use the real `cloudflare:test` env.
 - **Streaming:** R2 bodies stream; no `await .text()` on unbounded data.
 - **waitUntil** for post-response work (email, analytics).
